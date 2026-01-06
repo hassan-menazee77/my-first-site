@@ -1,0 +1,15 @@
+{
+  "short_name": "HassanCalc",
+  "name": "Hassan Calculator App",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/564/564429.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#071126",
+  "background_color": "#071126"
+}
