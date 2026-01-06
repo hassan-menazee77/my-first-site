@@ -36,43 +36,79 @@
       @media (max-width:360px){.calc{width:90vw;padding:16px}}
       .history{margin-bottom:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;text-align:right;font-size:13px;color:rgba(255,255,255,0.6);height:80px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:inset 0 0 5px rgba(0,0,0,0.3)}
       .history div{margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+      .mode-btn{background:rgba(255,255,255,0.1);padding:6px 12px;font-size:12px;border-radius:20px;color:var(--accent);border:1px solid rgba(255,255,255,0.1);cursor:pointer;transition:all .3s}
+      .mode-btn:hover{background:rgba(0,242,255,0.2);box-shadow:0 0 10px var(--accent)}
+      .hidden{display:none !important}
+      .disc-mode{display:flex;flex-direction:column;gap:15px;animation:fadeIn 0.3s}
+      .input-group{display:flex;flex-direction:column;gap:5px}
+      .input-group label{font-size:12px;color:rgba(255,255,255,0.6);margin-left:5px}
+      .disc-input{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);padding:15px;border-radius:12px;color:#fff;font-size:20px;outline:none;transition:all .3s;width:100%;box-sizing:border-box}
+      .disc-input:focus{border-color:var(--accent);box-shadow:0 0 15px rgba(0,242,255,0.2)}
+      .disc-result{background:rgba(0,242,255,0.1);padding:20px;border-radius:16px;text-align:center;border:1px solid rgba(0,242,255,0.2);margin-top:10px;box-shadow:0 0 20px rgba(0,242,255,0.1)}
+      .final-price{font-size:32px;color:var(--accent);font-weight:bold;text-shadow:0 0 20px var(--accent)}
+      .saved{font-size:14px;color:rgba(255,255,255,0.7);margin-top:5px}
+      @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+      input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
     </style>
   </head>
   <body>
     <main class="calc" role="application" aria-label="Calculator">
-      <div id="history" class="history"></div>
-      <div id="display" class="display" role="textbox" aria-readonly="true" aria-live="polite">0</div>
+      <div class="top-nav">
+        <span style="font-size:14px;color:rgba(255,255,255,0.5);font-weight:bold">HassanCalc</span>
+        <button id="toggleMode" class="mode-btn">🏷️ Discount Mode</button>
+      </div>
 
-      <div class="keys">
-        <button type="button" data-action="clear" style="color:#ff6b6b">C</button>
-        <button type="button" data-value="(">(</button>
-        <button type="button" data-value=")">)</button>
-        <button type="button" data-action="back">⌫</button>
+      <div id="calc-view">
+        <div id="history" class="history"></div>
+        <div id="display" class="display" role="textbox" aria-readonly="true" aria-live="polite">0</div>
 
-        <button type="button" data-value="√(">√</button>
-        <button type="button" data-value="^2">x²</button>
-        <button type="button" data-value="π">π</button>
-        <button type="button" class="op" data-value="/">÷</button>
+        <div class="keys">
+          <button type="button" data-action="clear" style="color:#ff6b6b">C</button>
+          <button type="button" data-value="(">(</button>
+          <button type="button" data-value=")">)</button>
+          <button type="button" data-action="back">⌫</button>
 
-        <button type="button" data-value="7">7</button>
-        <button type="button" data-value="8">8</button>
-        <button type="button" data-value="9">9</button>
-        <button type="button" class="op" data-value="*">×</button>
+          <button type="button" data-value="√(">√</button>
+          <button type="button" data-value="^2">x²</button>
+          <button type="button" data-value="π">π</button>
+          <button type="button" class="op" data-value="/">÷</button>
 
-        <button type="button" data-value="4">4</button>
-        <button type="button" data-value="5">5</button>
-        <button type="button" data-value="6">6</button>
-        <button type="button" class="op" data-value="-">−</button>
+          <button type="button" data-value="7">7</button>
+          <button type="button" data-value="8">8</button>
+          <button type="button" data-value="9">9</button>
+          <button type="button" class="op" data-value="*">×</button>
 
-        <button type="button" data-value="1">1</button>
-        <button type="button" data-value="2">2</button>
-        <button type="button" data-value="3">3</button>
-        <button type="button" class="op" data-value="+">+</button>
+          <button type="button" data-value="4">4</button>
+          <button type="button" data-value="5">5</button>
+          <button type="button" data-value="6">6</button>
+          <button type="button" class="op" data-value="-">−</button>
 
-        <button type="button" data-value="0">0</button>
-        <button type="button" data-value=".">.</button>
-        <button type="button" data-value="%">%</button>
-        <button type="button" class="op" data-action="equals">=</button>
+          <button type="button" data-value="1">1</button>
+          <button type="button" data-value="2">2</button>
+          <button type="button" data-value="3">3</button>
+          <button type="button" class="op" data-value="+">+</button>
+
+          <button type="button" data-value="0">0</button>
+          <button type="button" data-value=".">.</button>
+          <button type="button" data-value="%">%</button>
+          <button type="button" class="op" data-action="equals">=</button>
+        </div>
+      </div>
+
+      <div id="disc-view" class="disc-mode hidden">
+        <div class="input-group">
+          <label>Original Price (السعر الأصلي)</label>
+          <input type="number" id="d-price" class="disc-input" placeholder="0">
+        </div>
+        <div class="input-group">
+          <label>Discount % (نسبة الخصم)</label>
+          <input type="number" id="d-percent" class="disc-input" placeholder="0">
+        </div>
+        <div class="disc-result">
+          <div class="final-price" id="d-final">0.00</div>
+          <div class="saved" id="d-saved">You save: 0.00</div>
+        </div>
       </div>
 
       <footer>Keyboard support: type numbers and + - * /, Enter to evaluate, Backspace to delete. — © 2026 جميع الحقوق محفوظة لـ Hassan Menazee</footer>
@@ -83,7 +119,16 @@
         const display = document.getElementById('display');
         const calc = document.querySelector('.calc');
         const historyDiv = document.getElementById('history');
+        const toggleBtn = document.getElementById('toggleMode');
+        const calcView = document.getElementById('calc-view');
+        const discView = document.getElementById('disc-view');
+        const dPrice = document.getElementById('d-price');
+        const dPercent = document.getElementById('d-percent');
+        const dFinal = document.getElementById('d-final');
+        const dSaved = document.getElementById('d-saved');
+
         let expr = '';
+        let isDiscMode = false;
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound() {
@@ -112,7 +157,11 @@
 
         function safeEvaluate(s){
           if(!/^[0-9+\-*/().%\s^π√]+$/.test(s)) throw new Error();
-          s = s.replace(/%/g, '/100');
+          // Smart percentage logic: 100 - 20% -> 100 * (1 - 0.2)
+          // Regex looks for: Number [+-] Number %
+          s = s.replace(/([0-9.]+)[\s]*([+-])[\s]*([0-9.]+)%/g, '($1 $2 ($1 * $3 / 100))');
+          // Standard percentage: 50 * 10% -> 50 * 0.1
+          s = s.replace(/%/g, '/100'); 
           s = s.replace(/\^/g, '**');
           s = s.replace(/√/g, 'Math.sqrt');
           s = s.replace(/π/g, 'Math.PI');
@@ -124,6 +173,28 @@
           setTimeout(()=>calc.classList.remove('shake'), 400);
         }
 
+        // Discount Logic
+        function updateDiscount(){
+          const p = parseFloat(dPrice.value) || 0;
+          const d = parseFloat(dPercent.value) || 0;
+          const saved = p * (d / 100);
+          const final = p - saved;
+          dFinal.textContent = final.toFixed(2);
+          dSaved.textContent = `You save: ${saved.toFixed(2)}`;
+        }
+
+        dPrice.addEventListener('input', updateDiscount);
+        dPercent.addEventListener('input', updateDiscount);
+
+        toggleBtn.addEventListener('click', ()=>{
+          playSound();
+          isDiscMode = !isDiscMode;
+          calcView.classList.toggle('hidden');
+          discView.classList.toggle('hidden');
+          toggleBtn.textContent = isDiscMode ? '🧮 Calculator' : '🏷️ Discount Mode';
+        });
+
+        // Calculator Logic
         document.querySelector('.keys').addEventListener('click', e=>{
           const btn = e.target.closest('button');
           if(!btn) return;
@@ -139,6 +210,7 @@
         });
 
         window.addEventListener('keydown', e=>{
+          if(isDiscMode) return; // Disable calc keys in discount mode
           if((e.key >= '0' && e.key <= '9') || ['+','-','*','/','.','(',')','%','^'].includes(e.key)){
             playSound();
             if(expr === 'Error') expr = '';
