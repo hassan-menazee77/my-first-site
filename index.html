@@ -17,9 +17,8 @@
     </script>
     <style>
       :root{ --accent:#00f2ff; --text:#f8fafc; }
-      html,body{height:100%;margin:0;font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);background-size:400% 400%;animation:g 15s ease infinite;color:var(--text);display:flex;align-items:center;justify-content:center;overflow:hidden}
-      @keyframes g{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-      .calc{background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);border-radius:24px;padding:24px;width:340px;box-shadow:0 0 40px rgba(0,242,255,0.15), 0 20px 50px rgba(0,0,0,0.5);transition:transform .3s}
+      html,body{height:100%;margin:0;font-family:'Segoe UI',sans-serif;background:#0f0c29;color:var(--text);display:flex;align-items:center;justify-content:center;overflow:hidden}
+      .calc{background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);border-radius:24px;padding:24px;width:340px;box-shadow:0 0 40px rgba(0,242,255,0.15), 0 20px 50px rgba(0,0,0,0.5)}
       .display{background:rgba(0,0,0,0.3);border-radius:12px;padding:20px;color:var(--accent);font-size:36px;text-align:right;min-height:80px;box-sizing:border-box;border:1px solid rgba(255,255,255,0.1);text-shadow:0 0 20px var(--accent), 0 0 40px var(--accent);margin-bottom:20px;word-wrap:break-word;word-break:break-all;font-weight:300;box-shadow:inset 0 0 20px rgba(0,0,0,0.5)}
       .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
       button{background:rgba(255,255,255,0.05);border:none;color:rgba(255,255,255,0.9);padding:16px;border-radius:16px;font-size:20px;cursor:pointer;transition:all .2s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden}
@@ -27,6 +26,8 @@
       button:active::after{width:200px;height:200px}
       button:hover{background:rgba(255,255,255,0.2);transform:translateY(-3px);box-shadow:0 0 25px rgba(255,255,255,0.3);color:#fff;border:1px solid rgba(255,255,255,0.3)}
       button:active{transform:scale(0.95)}
+      .ripple{position:absolute;border-radius:50%;transform:scale(0);animation:ripple .6s linear;background:rgba(255,255,255,0.5);pointer-events:none}
+      @keyframes ripple{to{transform:scale(4);opacity:0}}
       .op{color:var(--accent);font-weight:bold;background:rgba(0,242,255,0.15);box-shadow:0 0 15px rgba(0,242,255,0.1)}
       .op:hover{background:rgba(0,242,255,0.3);box-shadow:0 0 40px var(--accent), 0 0 10px #fff}
       .wide{grid-column:span 2}
@@ -35,16 +36,20 @@
       .shake{animation:shake 0.4s ease-in-out}
       @media (max-width:360px){.calc{width:90vw;padding:16px}}
       .history{margin-bottom:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;text-align:right;font-size:13px;color:rgba(255,255,255,0.6);height:80px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:inset 0 0 5px rgba(0,0,0,0.3)}
-      .history div{margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .history div{margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:color .2s}
+      .history div:hover{color:var(--accent)}
       .top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
       .mode-btn{background:rgba(255,255,255,0.1);padding:6px 12px;font-size:12px;border-radius:20px;color:var(--accent);border:1px solid rgba(255,255,255,0.1);cursor:pointer;transition:all .3s}
       .mode-btn:hover{background:rgba(0,242,255,0.2);box-shadow:0 0 10px var(--accent)}
+      .mic-active{background:rgba(255,0,0,0.3) !important;box-shadow:0 0 15px red !important;color:red !important;animation:pulse 1s infinite}
+      @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
       .hidden{display:none !important}
       .disc-mode{display:flex;flex-direction:column;gap:15px;animation:fadeIn 0.3s}
       .input-group{display:flex;flex-direction:column;gap:5px}
       .input-group label{font-size:12px;color:rgba(255,255,255,0.6);margin-left:5px}
       .disc-input{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);padding:15px;border-radius:12px;color:#fff;font-size:20px;outline:none;transition:all .3s;width:100%;box-sizing:border-box}
       .disc-input:focus{border-color:var(--accent);box-shadow:0 0 15px rgba(0,242,255,0.2)}
+      select.disc-input option { background: #0f0c29; color: #fff; }
       .disc-result{background:rgba(0,242,255,0.1);padding:20px;border-radius:16px;text-align:center;border:1px solid rgba(0,242,255,0.2);margin-top:10px;box-shadow:0 0 20px rgba(0,242,255,0.1)}
       .final-price{font-size:32px;color:var(--accent);font-weight:bold;text-shadow:0 0 20px var(--accent)}
       .saved{font-size:14px;color:rgba(255,255,255,0.7);margin-top:5px}
@@ -53,9 +58,13 @@
     </style>
   </head>
   <body>
+    <canvas id="bg-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1"></canvas>
+    <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999"></canvas>
     <main class="calc" role="application" aria-label="Calculator">
       <div class="top-nav">
         <span style="font-size:14px;color:rgba(255,255,255,0.5);font-weight:bold">HassanCalc</span>
+        <button id="micBtn" class="mode-btn" style="margin-right:auto;margin-left:10px" title="Speak to calculate">🎤</button>
+        <button id="unitBtn" class="mode-btn" style="margin-right:5px">📏 Units</button>
         <button id="toggleMode" class="mode-btn">🏷️ Discount Mode</button>
       </div>
 
@@ -64,14 +73,29 @@
         <div id="display" class="display" role="textbox" aria-readonly="true" aria-live="polite">0</div>
 
         <div class="keys">
+          <button type="button" data-action="mc" style="font-size:14px;color:rgba(255,255,255,0.6)">MC</button>
+          <button type="button" data-action="mr" style="font-size:14px;color:rgba(255,255,255,0.6)">MR</button>
+          <button type="button" data-action="m+" style="font-size:14px;color:rgba(255,255,255,0.6)">M+</button>
+          <button type="button" data-action="m-" style="font-size:14px;color:rgba(255,255,255,0.6)">M-</button>
+
           <button type="button" data-action="clear" style="color:#ff6b6b">C</button>
           <button type="button" data-value="(">(</button>
           <button type="button" data-value=")">)</button>
           <button type="button" data-action="back">⌫</button>
 
+          <button type="button" data-value="e">e</button>
+          <button type="button" data-value="!">n!</button>
+          <button type="button" data-value="^">^</button>
           <button type="button" data-value="√(">√</button>
+
+          <button type="button" data-value="sin(">sin</button>
+          <button type="button" data-value="cos(">cos</button>
+          <button type="button" data-value="tan(">tan</button>
+          <button type="button" data-value="log(">log</button>
+
           <button type="button" data-value="^2">x²</button>
           <button type="button" data-value="π">π</button>
+          <button type="button" data-value="abs(">|x|</button>
           <button type="button" class="op" data-value="/">÷</button>
 
           <button type="button" data-value="7">7</button>
@@ -111,6 +135,27 @@
         </div>
       </div>
 
+      <div id="unit-view" class="disc-mode hidden">
+        <div class="input-group">
+          <label>Type (النوع)</label>
+          <select id="u-type" class="disc-input" style="padding:10px;font-size:16px;background:rgba(0,0,0,0.3)">
+            <option value="len">Length (طول)</option>
+            <option value="wgt">Weight (وزن)</option>
+            <option value="tmp">Temp (حرارة)</option>
+          </select>
+        </div>
+        <div class="input-group" style="flex-direction:row;gap:10px">
+          <input type="number" id="u-val" class="disc-input" placeholder="Value">
+          <div style="display:flex;flex-direction:column;gap:5px;flex:1">
+            <select id="u-from" class="disc-input" style="padding:5px;font-size:14px"></select>
+            <select id="u-to" class="disc-input" style="padding:5px;font-size:14px"></select>
+          </div>
+        </div>
+        <div class="disc-result">
+          <div class="final-price" id="u-result">0</div>
+        </div>
+      </div>
+
       <footer>Keyboard support: type numbers and + - * /, Enter to evaluate, Backspace to delete. — © 2026 جميع الحقوق محفوظة لـ Hassan Menazee</footer>
     </main>
 
@@ -120,15 +165,26 @@
         const calc = document.querySelector('.calc');
         const historyDiv = document.getElementById('history');
         const toggleBtn = document.getElementById('toggleMode');
+        const micBtn = document.getElementById('micBtn');
+        const unitBtn = document.getElementById('unitBtn');
         const calcView = document.getElementById('calc-view');
         const discView = document.getElementById('disc-view');
+        const unitView = document.getElementById('unit-view');
         const dPrice = document.getElementById('d-price');
         const dPercent = document.getElementById('d-percent');
         const dFinal = document.getElementById('d-final');
         const dSaved = document.getElementById('d-saved');
+        
+        // Unit Elements
+        const uType = document.getElementById('u-type');
+        const uVal = document.getElementById('u-val');
+        const uFrom = document.getElementById('u-from');
+        const uTo = document.getElementById('u-to');
+        const uResult = document.getElementById('u-result');
 
         let expr = '';
-        let isDiscMode = false;
+        let memory = 0;
+        let currentMode = 'calc'; // calc, disc, unit
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound() {
@@ -151,12 +207,21 @@
         function addHistory(expression, result){
           const line = document.createElement('div');
           line.textContent = `${expression} = ${result}`;
+          line.onclick = () => { expr = String(result); update(); playSound(); };
           historyDiv.appendChild(line);
           if(historyDiv.children.length > 5) historyDiv.removeChild(historyDiv.firstChild);
         }
 
+        function factorial(n) {
+          if (n < 0) return NaN;
+          if (n === 0 || n === 1) return 1;
+          let result = 1;
+          for (let i = 2; i <= n; i++) result *= i;
+          return result;
+        }
+
         function safeEvaluate(s){
-          if(!/^[0-9+\-*/().%\s^π√]+$/.test(s)) throw new Error();
+          if(!/^[0-9+\-*/().%\s^π√sincotalg!eabs]+$/.test(s)) throw new Error();
           // Smart percentage logic: 100 - 20% -> 100 * (1 - 0.2)
           // Regex looks for: Number [+-] Number %
           s = s.replace(/([0-9.]+)[\s]*([+-])[\s]*([0-9.]+)%/g, '($1 $2 ($1 * $3 / 100))');
@@ -164,7 +229,15 @@
           s = s.replace(/%/g, '/100'); 
           s = s.replace(/\^/g, '**');
           s = s.replace(/√/g, 'Math.sqrt');
+          s = s.replace(/sin/g, 'Math.sin');
+          s = s.replace(/cos/g, 'Math.cos');
+          s = s.replace(/tan/g, 'Math.tan');
+          s = s.replace(/log/g, 'Math.log10');
+          s = s.replace(/abs/g, 'Math.abs');
           s = s.replace(/π/g, 'Math.PI');
+          s = s.replace(/e/g, 'Math.E');
+          // Factorial: replace number! with factorial(number)
+          s = s.replace(/(\d+)!/g, 'factorial($1)');
           return Function('return ('+s+')')();
         }
 
@@ -186,31 +259,137 @@
         dPrice.addEventListener('input', updateDiscount);
         dPercent.addEventListener('input', updateDiscount);
 
-        toggleBtn.addEventListener('click', ()=>{
+        // Unit Logic
+        const units = {
+          len: { m:1, km:0.001, cm:100, mm:1000, ft:3.28084, in:39.3701 },
+          wgt: { kg:1, g:1000, lb:2.20462, oz:35.274 },
+          tmp: { c:'C', f:'F', k:'K' }
+        };
+        
+        function popUnits(){
+          const t = uType.value;
+          uFrom.innerHTML = ''; uTo.innerHTML = '';
+          Object.keys(units[t]).forEach(k => {
+            uFrom.add(new Option(k, k));
+            uTo.add(new Option(k, k));
+          });
+          updateUnit();
+        }
+        
+        function updateUnit(){
+          const t = uType.value;
+          const val = parseFloat(uVal.value) || 0;
+          const f = uFrom.value;
+          const to = uTo.value;
+          let res = 0;
+          
+          if(t === 'tmp'){
+            let cVal = val;
+            if(f === 'f') cVal = (val - 32) * 5/9;
+            if(f === 'k') cVal = val - 273.15;
+            if(to === 'c') res = cVal;
+            if(to === 'f') res = cVal * 9/5 + 32;
+            if(to === 'k') res = cVal + 273.15;
+          } else {
+            const base = val / units[t][f];
+            res = base * units[t][to];
+          }
+          uResult.textContent = res.toFixed(4);
+        }
+        
+        uType.addEventListener('change', popUnits);
+        uVal.addEventListener('input', updateUnit);
+        uFrom.addEventListener('change', updateUnit);
+        uTo.addEventListener('change', updateUnit);
+        popUnits(); // init
+
+        function switchMode(mode){
           playSound();
-          isDiscMode = !isDiscMode;
-          calcView.classList.toggle('hidden');
-          discView.classList.toggle('hidden');
-          toggleBtn.textContent = isDiscMode ? '🧮 Calculator' : '🏷️ Discount Mode';
+          currentMode = mode;
+          calcView.classList.add('hidden');
+          discView.classList.add('hidden');
+          unitView.classList.add('hidden');
+          
+          if(mode === 'calc') calcView.classList.remove('hidden');
+          if(mode === 'disc') discView.classList.remove('hidden');
+          if(mode === 'unit') unitView.classList.remove('hidden');
+        }
+
+        toggleBtn.addEventListener('click', ()=>{
+          if(currentMode === 'disc') switchMode('calc');
+          else switchMode('disc');
         });
+        
+        unitBtn.addEventListener('click', ()=>{
+          if(currentMode === 'unit') switchMode('calc');
+          else switchMode('unit');
+        });
+
+        // Voice Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(SpeechRecognition){
+          const recognition = new SpeechRecognition();
+          recognition.continuous = false;
+          recognition.lang = 'en-US';
+          micBtn.addEventListener('click', () => {
+            if(micBtn.classList.contains('mic-active')) recognition.stop();
+            else recognition.start();
+          });
+          recognition.onstart = () => micBtn.classList.add('mic-active');
+          recognition.onend = () => micBtn.classList.remove('mic-active');
+          recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript.toLowerCase();
+            let s = transcript.replace(/plus/g,'+').replace(/minus/g,'-').replace(/times/g,'*').replace(/divide/g,'/').replace(/x/g,'*').replace(/power/g,'^');
+            // Remove non-calc chars
+            s = s.replace(/[^0-9+\-*/().%\s^]/g, '');
+            if(s){
+              expr = s; update();
+              setTimeout(()=>{ try{ const res = safeEvaluate(expr); addHistory(expr, res); expr = String(res); update(); fireConfetti(); }catch(e){} }, 500);
+            }
+          };
+        } else {
+          micBtn.style.display = 'none';
+        }
 
         // Calculator Logic
         document.querySelector('.keys').addEventListener('click', e=>{
           const btn = e.target.closest('button');
           if(!btn) return;
           playSound();
+          
+          // Ripple
+          const rect = btn.getBoundingClientRect();
+          const ripple = document.createElement('span');
+          ripple.className = 'ripple';
+          ripple.style.left = `${e.clientX - rect.left - 10}px`;
+          ripple.style.top = `${e.clientY - rect.top - 10}px`;
+          btn.appendChild(ripple);
+          setTimeout(()=>ripple.remove(), 600);
+
           const val = btn.getAttribute('data-value');
           const action = btn.getAttribute('data-action');
 
+          if(action === 'mc'){ memory = 0; return }
+          if(action === 'mr'){ expr += memory; update(); return }
+          if(action === 'm+'){ try{ memory += safeEvaluate(expr); expr = ''; update(); }catch(e){} return }
+          if(action === 'm-'){ try{ memory -= safeEvaluate(expr); expr = ''; update(); }catch(e){} return }
+
           if(action === 'clear'){ expr = ''; update(); return }
           if(action === 'back'){ expr = expr.slice(0,-1); update(); return }
-          if(action === 'equals'){ try{ const result = safeEvaluate(expr); addHistory(expr, result); expr = String(result); }catch(e){ expr = 'Error'; errorAnim(); } update(); return }
+          if(action === 'equals'){ 
+            try{ 
+              const result = safeEvaluate(expr); 
+              addHistory(expr, result); 
+              expr = String(result); 
+              fireConfetti(); // Trigger confetti
+            }catch(e){ expr = 'Error'; errorAnim(); } update(); return 
+          }
           if(expr === 'Error') expr = '';
           expr += val; update();
         });
 
         window.addEventListener('keydown', e=>{
-          if(isDiscMode) return; // Disable calc keys in discount mode
+          if(currentMode !== 'calc') return; // Disable calc keys in other modes
           if((e.key >= '0' && e.key <= '9') || ['+','-','*','/','.','(',')','%','^'].includes(e.key)){
             playSound();
             if(expr === 'Error') expr = '';
@@ -219,13 +398,62 @@
           }
           if(e.key === 'Enter'){
             playSound();
-            try{ const result = safeEvaluate(expr); addHistory(expr, result); expr = String(result); }catch(err){ expr = 'Error'; errorAnim(); } update(); e.preventDefault(); return;
+            try{ 
+              const result = safeEvaluate(expr); 
+              addHistory(expr, result); 
+              expr = String(result); 
+              fireConfetti();
+            }catch(err){ expr = 'Error'; errorAnim(); } update(); e.preventDefault(); return;
           }
           if(e.key === 'Backspace'){ playSound(); expr = expr.slice(0,-1); update(); e.preventDefault(); return; }
           if(e.key.toLowerCase() === 'c'){ playSound(); expr = ''; update(); e.preventDefault(); return; }
         });
 
         update();
+
+        // Confetti Animation
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        function fireConfetti(){
+          for(let i=0; i<100; i++){
+            particles.push({
+              x: window.innerWidth/2, y: window.innerHeight/2,
+              vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20,
+              color: `hsl(${Math.random()*360}, 100%, 50%)`, life: 100
+            });
+          }
+        }
+        function animateConfetti(){
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          particles.forEach((p,i) => {
+            p.x += p.vx; p.y += p.vy; p.life--; p.vy += 0.5; // gravity
+            ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 5, 5);
+            if(p.life <= 0) particles.splice(i, 1);
+          });
+          requestAnimationFrame(animateConfetti);
+        }
+        animateConfetti();
+
+        // Background Particles
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let bgParticles = [];
+        function initBg(){
+          bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
+          bgParticles = [];
+          for(let i=0; i<50; i++) bgParticles.push({x:Math.random()*bgCanvas.width, y:Math.random()*bgCanvas.height, r:Math.random()*2, s:Math.random()*0.5+0.1});
+        }
+        window.addEventListener('resize', initBg); initBg();
+        function animateBg(){
+          bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+          bgCtx.fillStyle = 'rgba(255,255,255,0.3)';
+          bgParticles.forEach(p=>{ p.y-=p.s; if(p.y<0)p.y=bgCanvas.height; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2); bgCtx.fill(); });
+          requestAnimationFrame(animateBg);
+        }
+        animateBg();
       })();
     </script>
   </body>
